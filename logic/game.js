@@ -57,12 +57,14 @@ class Board {
         if (row < 3) color = 'White'
         else if (row > 6) color = 'Black'
         if (row === 2 || row === 7) return new Pawn(color)
+        if (row === 6 && column == 'C') return new King('White') 
+        if (row === 3 && column == 'C') return new King('Black')
         if (row === 1 || row === 8) {
             if (column == 'A' || column == 'H') return new Rook(color)
             if (column == 'B' || column == 'G') return new Knight(color)
             if (column == 'C' || column == 'F') return new Bishop(color)
             if (column == 'D') return new Queen(color)
-            if (column == 'E') return new King(color)
+            //if (column == 'E') return new King(color)
         }
         return null
     }
@@ -77,11 +79,10 @@ class Board {
         loop1:
         for (let r = 0; r < this.board.length; r++) {
             for (let c = 0; c < this.board[r].length; c++) {
-                if (this.board[r][c].piece.name === 'King' && this.board[r][c].piece.color === color) {
+                if (this.board[r][c].piece && this.board[r][c].piece.name === 'King' && this.board[r][c].piece.color === color) {
                     kingTile = this.board[r][c]
                     break loop1
                 }
-                console.log(r, c)
             }
         }
 
@@ -90,10 +91,11 @@ class Board {
 
     kingSafe(color) {
         let kingTile = this._findKingTile(color)
-        let {columnIndex, rowIndex} = kingTile
-        let kingColumn = columnIndex
+        let {rowIndex, columnIndex} = kingTile
         let kingRow = rowIndex
+        let kingColumn = columnIndex
         let safe = true
+        let dangerousTiles = []
 
         //Knights Check
         let knightPositions = [
@@ -106,19 +108,91 @@ class Board {
             [-2, 1],
             [-2, -1]
         ]
-        knightPositions = knightPositions.map(pos => {
-            let [r, c] = pos
-            return [kingRow + r, kingColumn + c]
-        }).filter(pos => pos[0] >= 0 && pos[1] >= 0)
+
+        knightPositions = this._pointsRelativeToPiece(kingRow, kingColumn, knightPositions)
 
         for (let i = 0; i < knightPositions.length; i++) {
             let [r, c] = knightPositions[i]
-            if (this.board[r][c].piece.name === 'Knight') return false
+            if (this.board[r][c].piece && this.board[r][c].piece.name === 'Knight' && this.board[r][c].piece.color !== kingTile.piece.color) dangerousTiles.push([r, c])
         }
         //End Knights Check
 
         //crossCheck bro
+        let pointsAroundKing = [
+            {
+                direction: 'straight',
+                modifier: [-1, 0]
+            },
+            {
+                direction: 'diagonal',
+                pawnColor: 'Black',
+                modifier: [-1, 1]
+            },
+            {
+                direction: 'diagonal',
+                pawnColor: 'Black',
+                modifier: [-1, -1]
+            },
+            {
+                direction: 'straight',
+                modifier: [0, 1]
+            },
+            {
+                direction: 'straight',
+                modifier: [0, -1]
+            },
+            {
+                direction: 'straight',
+                modifier: [1, 0]
+            },
+            {
+                direction: 'diagonal',
+                pawnColor: 'White',
+                modifier: [1, 1]
+            },
+            {
+                direction: 'diagonal',
+                pawnColor: 'White',
+                modifier: [1, -1]
+            }
+        ]
 
+        for (let directionInfo of pointsAroundKing) {
+            let [rowDir, colDir] = directionInfo.modifier
+            let currentRow = kingRow + rowDir
+            let currentColumn = kingColumn + colDir
+            let currentTile = this.board[currentRow] && this.board[currentRow][currentColumn]
+            let currentPiece = currentTile && currentTile.piece
+            while (currentTile && (!currentPiece || currentPiece.color !== kingTile.piece.color)) {
+                if (currentPiece && this.board[currentRow][currentColumn].piece.color !== kingTile.piece.color) {
+                    switch (directionInfo.direction) {
+                        case 'diagonal':
+                            if (currentPiece.name === 'Bishop' || currentPiece.name === 'Queen' || (currentPiece.name === 'Pawn' && currentPiece.pawnColor !== kingTile.piece.color)) dangerousTiles.push([currentRow, currentColumn])
+                            break
+                        case 'straight':
+                            if (currentPiece.name === 'Rook' || currentPiece.name === 'Queen') dangerousTiles.push([currentRow, currentColumn])
+                            break
+                        default:
+                            break
+                    }
+                    break
+                }
+
+                currentRow += rowDir
+                currentColumn += colDir
+                currentTile = this.board[currentRow] && this.board[currentRow][currentColumn]
+                currentPiece = currentTile && currentTile.piece
+            }
+        }
+
+        return dangerousTiles
+    }
+
+    _pointsRelativeToPiece(pieceRow, pieceCol, arrayOfRelativeXYPositions) {
+        return arrayOfRelativeXYPositions.map(pos => {
+            let [r, c] = pos
+            return [pieceRow + r, pieceCol + c]
+        }).filter(pos => pos[0] >= 0 && pos[1] >= 0)
     }
 
     checkMate(color) {
@@ -278,3 +352,4 @@ class King extends Piece {
 }
 
 let woo = new Board()
+console.log(woo.kingSafe('Black'))
