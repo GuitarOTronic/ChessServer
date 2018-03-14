@@ -123,12 +123,12 @@ class Board {
             },
             {
                 direction: 'diagonal',
-                pawnColor: 'Black',
+                pawnColor: 'White',
                 modifier: [-1, 1]
             },
             {
                 direction: 'diagonal',
-                pawnColor: 'Black',
+                pawnColor: 'White',
                 modifier: [-1, -1]
             },
             {
@@ -145,12 +145,12 @@ class Board {
             },
             {
                 direction: 'diagonal',
-                pawnColor: 'White',
+                pawnColor: 'Black',
                 modifier: [1, 1]
             },
             {
                 direction: 'diagonal',
-                pawnColor: 'White',
+                pawnColor: 'Black',
                 modifier: [1, -1]
             }
         ]
