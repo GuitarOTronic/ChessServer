@@ -6,6 +6,10 @@ const express = require('express')
 const app = express()
 const port = process.env.PORT || 8000
 
+const http = require('http')
+const socketIo = require("socket.io");
+const axios = require ('axios')
+
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
@@ -31,4 +35,3 @@ app.use((err, _req, res, _next) => {
 app.listen(port, () => {
     console.log('listening on port', port)
 })
->>>>>>> 996d75f84a751f392c161b7b439ac189a0b6a497
