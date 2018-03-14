@@ -1,15 +1,3 @@
-<<<<<<< HEAD
-var app = require('express')();
-var http = require('http').Server(app);
-
-app.get('/', function(req, res){
-  res.send('<h1>Hello world</h1>');
-});
-
-http.listen(3000, function(){
-  console.log('listening on *:3000');
-});
-=======
 const path = require('path')
 
 const express = require('express')
@@ -41,4 +29,3 @@ app.use((err, _req, res, _next) => {
 app.listen(port, () => {
     console.log('listening on port', port)
 })
->>>>>>> 996d75f84a751f392c161b7b439ac189a0b6a497

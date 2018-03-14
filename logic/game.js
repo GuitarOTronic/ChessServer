@@ -71,7 +71,57 @@ class Board {
         if (this.board[newRow][newCol].piece.color === this.board[oldRow][oldCol].piece.color) throw new Error('Same Color Piece on New Tile')
     }
 
+    _findKingTile(color) {
+        let kingTile
+
+        loop1:
+        for (let r = 0; r < this.board.length; r++) {
+            for (let c = 0; c < this.board[r].length; c++) {
+                if (this.board[r][c].piece.name === 'King' && this.board[r][c].piece.color === color) {
+                    kingTile = this.board[r][c]
+                    break loop1
+                }
+                console.log(r, c)
+            }
+        }
+
+        return kingTile
+    }
+
     kingSafe(color) {
+        let kingTile = this._findKingTile(color)
+        let {columnIndex, rowIndex} = kingTile
+        let kingColumn = columnIndex
+        let kingRow = rowIndex
+        let safe = true
+
+        //Knights Check
+        let knightPositions = [
+            [1, 2],
+            [1, -2],
+            [-1, 2],
+            [-1, -2],
+            [2, 1],
+            [2, -1],
+            [-2, 1],
+            [-2, -1]
+        ]
+        knightPositions = knightPositions.map(pos => {
+            let [r, c] = pos
+            return [kingRow + r, kingColumn + c]
+        }).filter(pos => pos[0] >= 0 && pos[1] >= 0)
+
+        for (let i = 0; i < knightPositions.length; i++) {
+            let [r, c] = knightPositions[i]
+            if (this.board[r][c].piece.name === 'Knight') return false
+        }
+        //End Knights Check
+
+        //crossCheck bro
+
+    }
+
+    checkMate(color) {
 
     }
 
