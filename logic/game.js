@@ -57,14 +57,12 @@ class Board {
         if (row < 3) color = 'White'
         else if (row > 6) color = 'Black'
         if (row === 2 || row === 7) return new Pawn(color)
-        if (row === 6 && column == 'C') return new King('White') 
-        if (row === 3 && column == 'C') return new King('Black')
         if (row === 1 || row === 8) {
             if (column == 'A' || column == 'H') return new Rook(color)
             if (column == 'B' || column == 'G') return new Knight(color)
             if (column == 'C' || column == 'F') return new Bishop(color)
             if (column == 'D') return new Queen(color)
-            //if (column == 'E') return new King(color)
+            if (column == 'E') return new King(color)
         }
         return null
     }
@@ -352,4 +350,3 @@ class King extends Piece {
 }
 
 let woo = new Board()
-console.log(woo.kingSafe('Black'))
