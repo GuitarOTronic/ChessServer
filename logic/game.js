@@ -165,7 +165,7 @@ class Board {
                 if (currentPiece && this.board[currentRow][currentColumn].piece.color !== kingTile.piece.color) {
                     switch (directionInfo.direction) {
                         case 'diagonal':
-                            if (currentPiece.name === 'Bishop' || currentPiece.name === 'Queen' || (currentPiece.name === 'Pawn' && currentPiece.pawnColor !== kingTile.piece.color)) dangerousTiles.push([currentRow, currentColumn])
+                            if (currentPiece.name === 'Bishop' || currentPiece.name === 'Queen' || (currentPiece.name === 'Pawn' && currentPiece.color === directionInfo.pawnColor)) dangerousTiles.push([currentRow, currentColumn])
                             break
                         case 'straight':
                             if (currentPiece.name === 'Rook' || currentPiece.name === 'Queen') dangerousTiles.push([currentRow, currentColumn])
