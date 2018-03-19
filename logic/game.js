@@ -1,3 +1,5 @@
+let fs = require('fs')
+
 class Game {
     constructor(whitePlayerName = 'White', whitePlayerID = null, blackPlayerName = 'Black', blackPlayerID = null) {
         if (whitePlayerName.toLowerCase() === blackPlayerName.toLowerCase()) {
@@ -54,15 +56,16 @@ class Board {
 
     determineStartingPiece(column, row) {
         let color = ''
+        let name = row + column
         if (row < 3) color = 'White'
         else if (row > 6) color = 'Black'
-        if (row === 2 || row === 7) return new Pawn(color)
+        if (row === 2 || row === 7) return new Pawn(color, name)
         if (row === 1 || row === 8) {
-            if (column == 'A' || column == 'H') return new Rook(color)
-            if (column == 'B' || column == 'G') return new Knight(color)
-            if (column == 'C' || column == 'F') return new Bishop(color)
-            if (column == 'D') return new Queen(color)
-            if (column == 'E') return new King(color)
+            if (column == 'A' || column == 'H') return new Rook(color, name)
+            if (column == 'B' || column == 'G') return new Knight(color, name)
+            if (column == 'C' || column == 'F') return new Bishop(color, name)
+            if (column == 'D') return new Queen(color, name)
+            if (column == 'E') return new King(color, name)
         }
         return null
     }
@@ -231,13 +234,18 @@ class Board {
 }
 
 class Piece {
-    constructor(color) {
+    constructor(color, id) {
         this._color = color.toLowerCase().split('').includes('w') ? 'White' : 'Black'
+        this._id = id
         this._captured = false
     }
 
     capture() {
         this._captured = true
+    }
+
+    get id() {
+        return this._id
     }
 
     get captured() {
@@ -254,8 +262,8 @@ class Piece {
 }
 
 class Pawn extends Piece {
-    constructor(color) {
-        super(color)
+    constructor(color, id) {
+        super(color, id)
         this._name = 'Pawn'
         this._shortName = 'P'
     }
@@ -270,8 +278,8 @@ class Pawn extends Piece {
 }
 
 class Bishop extends Piece {
-    constructor(color) {
-        super(color)
+    constructor(color, id) {
+        super(color, id)
         this._name = 'Bishop'
         this._shortName = 'B'
     }
@@ -286,8 +294,8 @@ class Bishop extends Piece {
 }
 
 class Knight extends Piece {
-    constructor(color) {
-        super(color)
+    constructor(color, id) {
+        super(color, id)
         this._name = 'Knight'
         this._shortName = 'N'
     }
@@ -302,14 +310,10 @@ class Knight extends Piece {
 }
 
 class Rook extends Piece {
-    constructor(color) {
-        super(color)
+    constructor(color, id) {
+        super(color, id)
         this._name = 'Rook'
         this._shortName = 'R'
-    }
-
-    possibleMoves (tile) {
-
     }
 
 
@@ -323,8 +327,8 @@ class Rook extends Piece {
 }
 
 class Queen extends Piece {
-    constructor(color) {
-        super(color)
+    constructor(color, id) {
+        super(color, id)
         this._name = 'Queen'
         this._shortName = 'Q'
     }
@@ -339,28 +343,10 @@ class Queen extends Piece {
 }
 
 class King extends Piece {
-    constructor(color) {
-        super(color)
+    constructor(color, id) {
+        super(color, id)
         this._name = 'King'
         this._shortName = 'K'
-    }
-
-    possibleMoves (tile, board) {
-        let col = tile.columnIndex
-        let row = tile.rowIndex
-        let kingModifier = [
-            [0, 1],
-            [0, -1],
-            [1, 0],
-            [1, 1]
-            [1, -1],
-            [-1, 0],
-            [-1, 1],
-            [-1, -1]
-        ]
-
-        let allMoves = board._pointsRelativeToPiece(row, col, kingModifier)
-        return allMoves.filter()
     }
 
     get name() {
@@ -377,6 +363,15 @@ class History {
         this._game = []
     }
 
+    addMove (beginningTile, endTile) {
+        this._game.push(this._createObject(beginningTile, endTile))
+        
+    }
+
+    _createObject (beginningTile, endTile) {
+
+    }
+
     get game () {
         return this._game
     }
@@ -384,3 +379,5 @@ class History {
 }
 
 let woo = new Board()
+
+console.log(woo.board[0][0].piece)
