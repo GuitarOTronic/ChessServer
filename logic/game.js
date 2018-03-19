@@ -368,8 +368,31 @@ class History {
         
     }
 
-    _createObject (beginningTile, endTile) {
+    piecesCaputredBy (pieceId) {
+        let capturedObj = {}
+        this.game.forEach(historyObj => {
+            if (historyObj.id == pieceId && historyObject.captured) {
+                capturedObj[historyObj.captured] = capturedObj[historyObj.captured] ? capturedObj[historyObj.captured] + 1 : 1
+            }
+        })
+        return capturedObj
+    }
 
+    pieceHistory (pieceId) {
+        return this.game.filter(historyObj => historyObj.id == pieceId)
+    }
+
+    _createObject (beginningTile, endTile) {
+        if (!beginningTile || !endTile && !beginningTile.piece) throw new Error(`Invalid beginning or end tile in _createObject of History class. begTile: ${beginningTile}, endTile: ${endTile}`)
+        let object = {
+            turn: this.game.length + 1,
+            id: beginningTile.piece.id,
+            beginningTile: beginningTile.name,
+            endTile: endTile.name,
+            captured: endTile.piece ? endTile.piece.name : null,
+            piece: beginningTile.piece.shortName,
+            color: beginningTile.piece.shortColor
+        }
     }
 
     get game () {
