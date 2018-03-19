@@ -87,14 +87,10 @@ class Board {
         return kingTile
     }
 
-    kingSafe(color) {
-        let kingTile = this._findKingTile(color)
-        let {rowIndex, columnIndex} = kingTile
-        let kingRow = rowIndex
-        let kingColumn = columnIndex
+    pieceSafe(row, col) {
+        let tile = this.board[row, col]
         let safe = true
         let dangerousTiles = []
-
         //Knights Check
         let knightPositions = [
             [1, 2],
@@ -107,7 +103,7 @@ class Board {
             [-2, -1]
         ]
 
-        knightPositions = this._pointsRelativeToPiece(kingRow, kingColumn, knightPositions)
+        knightPositions = this._pointsRelativeToPiece(row, column, knightPositions)
 
         for (let i = 0; i < knightPositions.length; i++) {
             let [r, c] = knightPositions[i]
@@ -116,7 +112,7 @@ class Board {
         //End Knights Check
 
         //crossCheck bro
-        let pointsAroundKing = [
+        let pointsAroundPiece = [
             {
                 direction: 'straight',
                 modifier: [-1, 0]
@@ -155,14 +151,14 @@ class Board {
             }
         ]
 
-        for (let directionInfo of pointsAroundKing) {
+        for (let directionInfo of pointsAroundPiece) {
             let [rowDir, colDir] = directionInfo.modifier
-            let currentRow = kingRow + rowDir
-            let currentColumn = kingColumn + colDir
+            let currentRow = row + rowDir
+            let currentColumn = col + colDir
             let currentTile = this.board[currentRow] && this.board[currentRow][currentColumn]
             let currentPiece = currentTile && currentTile.piece
-            while (currentTile && (!currentPiece || currentPiece.color !== kingTile.piece.color)) {
-                if (currentPiece && this.board[currentRow][currentColumn].piece.color !== kingTile.piece.color) {
+            while (currentTile && (!currentPiece || currentPiece.color !== tile.piece.color)) {
+                if (currentPiece && this.board[currentRow][currentColumn].piece.color !== tile.piece.color) {
                     switch (directionInfo.direction) {
                         case 'diagonal':
                             if (currentPiece.name === 'Bishop' || currentPiece.name === 'Queen' || (currentPiece.name === 'Pawn' && currentPiece.color === directionInfo.pawnColor)) dangerousTiles.push([currentRow, currentColumn])
@@ -190,10 +186,14 @@ class Board {
         return arrayOfRelativeXYPositions.map(pos => {
             let [r, c] = pos
             return [pieceRow + r, pieceCol + c]
-        }).filter(pos => pos[0] >= 0 && pos[1] >= 0)
+        }).filter(pos => pos[0] >= 0 && pos[0] < 8 && pos[1] >= 0 && pos[1] < 8)
     }
 
     checkMate(color) {
+        let kingTile = this._findKingTile(color)
+        let kingRow = kingTile.rowIndex
+        let kingColumn = kingTile.columnIndex
+
 
     }
 
@@ -308,6 +308,11 @@ class Rook extends Piece {
         this._shortName = 'R'
     }
 
+    possibleMoves (tile) {
+
+    }
+
+
     get name() {
         return this._name
     }
@@ -340,6 +345,24 @@ class King extends Piece {
         this._shortName = 'K'
     }
 
+    possibleMoves (tile, board) {
+        let col = tile.columnIndex
+        let row = tile.rowIndex
+        let kingModifier = [
+            [0, 1],
+            [0, -1],
+            [1, 0],
+            [1, 1]
+            [1, -1],
+            [-1, 0],
+            [-1, 1],
+            [-1, -1]
+        ]
+
+        let allMoves = board._pointsRelativeToPiece(row, col, kingModifier)
+        return allMoves.filter()
+    }
+
     get name() {
         return this._name
     }
@@ -347,6 +370,17 @@ class King extends Piece {
     get shortName() {
         return this._shortName
     }
+}
+
+class History {
+    constructor () {
+        this._game = []
+    }
+
+    get game () {
+        return this._game
+    }
+
 }
 
 let woo = new Board()
