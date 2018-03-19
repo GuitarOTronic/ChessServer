@@ -192,6 +192,18 @@ class Board {
         }).filter(pos => pos[0] >= 0 && pos[0] < 8 && pos[1] >= 0 && pos[1] < 8)
     }
 
+    possibleMoves(tile){
+      let possibilities = []
+      for (let r = 0; r < this.board.length; r++) {
+          for (let c = 0; c < this.board[r].length; c++) {
+            if(this.board[r][c].piece && this.board[r][c].piece.color != tile.piece.color || !this.board[r][c].piece){
+              // do the things
+              tile.piece.moveOkay(tile, this.board[r][c])
+            }
+          }
+        }
+    }
+
     checkMate(color) {
         let kingTile = this._findKingTile(color)
         let kingRow = kingTile.rowIndex
@@ -274,6 +286,17 @@ class Pawn extends Piece {
 
     get shortName() {
         return this._shortName
+    }
+
+    moveOkay(tile, newTile){
+      if(!tile || !tile.piece || !newTile) return false
+      if(tile.piece.color === 'Black'){
+        if(newTile.rowIndex >= tile.rowIndex) return false
+        if(newTile.rowIndex - tile.rowIndex > 2 ) return false
+        if(newTile.columnIndex > tile.columnIndex + 1 || newTile.columnIndex < tile.columnIndex -1)  return false
+        // this.id
+
+      }
     }
 }
 
@@ -365,7 +388,7 @@ class History {
 
     addMove (beginningTile, endTile) {
         this._game.push(this._createObject(beginningTile, endTile))
-        
+
     }
 
     piecesCaputredBy (pieceId) {
