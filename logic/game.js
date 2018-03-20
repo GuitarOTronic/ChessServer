@@ -9,7 +9,7 @@ class Game {
         this._whitePlayer = new Player(whitePlayerName, 'white')
         this._blackPlayer = new Player(blackPlayerName, 'black')
 
-        this._gameHistory = []
+        this._gameHistory = new History()
 
         this._board = new Board(whitePlayer, blackPlayer)
     }
@@ -36,7 +36,7 @@ class Player {
 }
 
 class Board {
-    constructor() {
+    constructor(history) {
         this._board = []
         let columns = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         let rows = [1, 2, 3, 4, 5, 6, 7, 8]
@@ -197,11 +197,13 @@ class Board {
       for (let r = 0; r < this.board.length; r++) {
           for (let c = 0; c < this.board[r].length; c++) {
             if(this.board[r][c].piece && this.board[r][c].piece.color != tile.piece.color || !this.board[r][c].piece){
-              // do the things
-              tile.piece.moveOkay(tile, this.board[r][c])
+              if(tile.piece.moveOkay(tile, this.board[r][c], history)){
+                possibilities.push([r, c])
+              }
             }
           }
         }
+        return possibilities
     }
 
     checkMate(color) {
@@ -288,15 +290,26 @@ class Pawn extends Piece {
         return this._shortName
     }
 
-    moveOkay(tile, newTile){
+    moveOkay(tile, newTile, history){
       if(!tile || !tile.piece || !newTile) return false
-      if(tile.piece.color === 'Black'){
-        if(newTile.rowIndex >= tile.rowIndex) return false
-        if(newTile.rowIndex - tile.rowIndex > 2 ) return false
-        if(newTile.columnIndex > tile.columnIndex + 1 || newTile.columnIndex < tile.columnIndex -1)  return false
-        // this.id
 
+      let verticalMovement = Math.abs(tile.rowIndex - newTile.rowIndex)
+      let horizontalMovement = Math.abs(newTile.columnIndex - tile.columnIndex)
+
+      if (tile.piece.color === 'White' ? newTile.rowIndex <= tile.rowIndex : newTile.rowIndex >= tile.rowIndex) return false
+
+      if(verticalMovement > 2 || horizontalMovement > 1) {
+        return false
+      } else {
+        if(verticalMovement === 2){
+          if (horizontalMovement) return false
+          if(history.pieceHistory(tile.piece.id).length != 0 ) return false
+        }else if(horizontalMovement){
+          if (!newTile.piece || newTile.piece.color === tile.piece.color) return false
+        }
+        return true
       }
+
     }
 }
 
@@ -391,7 +404,7 @@ class History {
 
     }
 
-    piecesCaputredBy (pieceId) {
+    piecesCapturedBy (pieceId) {
         let capturedObj = {}
         this.game.forEach(historyObj => {
             if (historyObj.id == pieceId && historyObject.captured) {
