@@ -1,7 +1,7 @@
 let fs = require('fs')
 
 class Game {
-    constructor(whitePlayerName = 'White', whitePlayerID = null, blackPlayerName = 'Black', blackPlayerID = null) {
+    constructor(whitePlayerName = 'White', whitePlayerID = null, blackPlayerName = 'Black', blackPlayerID = null, history) {
         if (whitePlayerName.toLowerCase() === blackPlayerName.toLowerCase()) {
             whitePlayerName += ' (W)'
             blackPlayerName += ' (B)'
@@ -9,9 +9,8 @@ class Game {
         this._whitePlayer = new Player(whitePlayerName, 'white')
         this._blackPlayer = new Player(blackPlayerName, 'black')
 
-        this._gameHistory = new History()
+        this._gameHistory = history || []
         this._board = new Board(this._gameHistory)
-
 
     }
 }
@@ -39,6 +38,8 @@ class Player {
 class Board {
     constructor(history) {
         this._board = []
+        this._gameHistory = new History()
+
         let columns = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         let rows = [1, 2, 3, 4, 5, 6, 7, 8]
         for (let row of rows) {
@@ -53,7 +54,12 @@ class Board {
             }
             this._board.push(thisRow)
         }
-         this._gameHistory = history || new History()
+
+        if (history && history.length) {
+            history.forEach(turn => {
+                this.move(turn.beginningTile, turn.endTile)
+            })
+        }
     }
 
     determineStartingPiece(column, row) {
@@ -198,8 +204,8 @@ class Board {
       let possibilities = []
       for (let r = 0; r < this.board.length; r++) {
           for (let c = 0; c < this.board[r].length; c++) {
-            if(this.board[r][c].piece && this.board[r][c].piece.color != tile.piece.color || !this.board[r][c].piece){
-              if(tile.piece.moveOkay(tile, this.board[r][c], history)){
+            if (this.board[r][c].piece && this.board[r][c].piece.color != tile.piece.color || !this.board[r][c].piece){
+              if (tile.piece.moveOkay(tile, this.board[r][c], history)){
                 possibilities.push([r, c])
               }
             }
@@ -249,14 +255,14 @@ class Board {
       let rows = ['1', '2', '3', '4', '5', '6', '7', '8']
       let oldTile = this.board[rows.indexOf(oldTileName[1])][columns.indexOf(oldTileName[0])]
       let newTile = this.board[rows.indexOf(newTileName[1])][columns.indexOf(newTileName[0])]
-      if(!oldTile.piece) throw new Error ('Board.move: no piece on beginning tile')
+      if (!oldTile.piece) throw new Error ('Board.move: no piece on beginning tile')
 
-      if(oldTile.piece.moveOkay(oldTile, newTile, this._gameHistory)){
+      if (oldTile.piece.moveOkay(oldTile, newTile, this._gameHistory)){
         this._gameHistory.addMove(oldTile, newTile)
 
         newTile.piece = oldTile.piece
         oldTile.piece = null
-      } else{
+      } else {
         throw new Error ('Board.move: illegal move ')
       }
 
@@ -322,17 +328,17 @@ class Pawn extends Piece {
 
       if (tile.piece.color === 'White' ? newTile.rowIndex <= tile.rowIndex : newTile.rowIndex >= tile.rowIndex) return false
 
-      if(verticalMovement > 2 || horizontalMovement > 1) {
+      if (verticalMovement > 2 || horizontalMovement > 1) {
         return false
       } else {
-        if(verticalMovement === 2){
+        if (verticalMovement === 2) {
           if (horizontalMovement) return false
-          if(history.pieceHistory(tile.piece.id).length != 0 ) return false
-        }else if(horizontalMovement){
-          if(verticalMovement !== 1) return false
+          if (history.pieceHistory(tile.piece.id).length != 0 ) return false
+        }else if (horizontalMovement) {
+          if (verticalMovement !== 1) return false
           if (!newTile.piece || newTile.piece.color === tile.piece.color) return false
-        }else if(!horizontalMovement){
-          if(newTile.piece) return false
+        }else if (!horizontalMovement) {
+          if (newTile.piece) return false
         }
         return true
       }
@@ -462,19 +468,9 @@ class History {
     get game () {
         return this._game
     }
-
 }
 
-let woo = new Board()
-
-console.log(woo.board)
-woo.move('A2', 'A4')
-console.log('**************************');
-console.log(woo.board)
-console.log('**************************');
-console.log(woo.history)
-
-module.exports ={
+module.exports = {
   Game,
   Player,
   Board,
