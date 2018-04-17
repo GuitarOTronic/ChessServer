@@ -439,4 +439,5 @@ class History {
 
 let woo = new Board()
 
-console.log(woo.board[0][0].piece)
+console.log(woo.board)
+console.log('heyo buddy');
