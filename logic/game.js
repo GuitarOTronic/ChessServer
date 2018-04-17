@@ -10,8 +10,9 @@ class Game {
         this._blackPlayer = new Player(blackPlayerName, 'black')
 
         this._gameHistory = new History()
+        this._board = new Board(this._gameHistory)
 
-        this._board = new Board(whitePlayer, blackPlayer)
+
     }
 }
 
@@ -52,6 +53,7 @@ class Board {
             }
             this._board.push(thisRow)
         }
+         this._gameHistory = history || new History()
     }
 
     determineStartingPiece(column, row) {
@@ -242,8 +244,30 @@ class Board {
         }
     }
 
+    move(oldTileName, newTileName){
+      let columns = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+      let rows = ['1', '2', '3', '4', '5', '6', '7', '8']
+      let oldTile = this.board[rows.indexOf(oldTileName[1])][columns.indexOf(oldTileName[0])]
+      let newTile = this.board[rows.indexOf(newTileName[1])][columns.indexOf(newTileName[0])]
+      if(!oldTile.piece) throw new Error ('Board.move: no piece on beginning tile')
+
+      if(oldTile.piece.moveOkay(oldTile, newTile, this._gameHistory)){
+        this._gameHistory.addMove(oldTile, newTile)
+
+        newTile.piece = oldTile.piece
+        oldTile.piece = null
+      } else{
+        throw new Error ('Board.move: illegal move ')
+      }
+
+    }
+
     get board() {
         return this._board
+    }
+
+    get history(){
+      return this._gameHistory
     }
 }
 
@@ -305,7 +329,10 @@ class Pawn extends Piece {
           if (horizontalMovement) return false
           if(history.pieceHistory(tile.piece.id).length != 0 ) return false
         }else if(horizontalMovement){
+          if(verticalMovement !== 1) return false
           if (!newTile.piece || newTile.piece.color === tile.piece.color) return false
+        }else if(!horizontalMovement){
+          if(newTile.piece) return false
         }
         return true
       }
@@ -420,7 +447,7 @@ class History {
 
     _createObject (beginningTile, endTile) {
         if (!beginningTile || !endTile && !beginningTile.piece) throw new Error(`Invalid beginning or end tile in _createObject of History class. begTile: ${beginningTile}, endTile: ${endTile}`)
-        let object = {
+        let turnObject = {
             turn: this.game.length + 1,
             id: beginningTile.piece.id,
             beginningTile: beginningTile.name,
@@ -429,6 +456,7 @@ class History {
             piece: beginningTile.piece.shortName,
             color: beginningTile.piece.shortColor
         }
+        return turnObject
     }
 
     get game () {
@@ -440,4 +468,22 @@ class History {
 let woo = new Board()
 
 console.log(woo.board)
-console.log('heyo buddy');
+woo.move('A2', 'A4')
+console.log('**************************');
+console.log(woo.board)
+console.log('**************************');
+console.log(woo.history)
+
+module.exports ={
+  Game,
+  Player,
+  Board,
+  Piece,
+  Pawn,
+  Knight,
+  Bishop,
+  Rook,
+  Queen,
+  King,
+  History
+  }
