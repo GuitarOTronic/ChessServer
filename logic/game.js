@@ -216,42 +216,43 @@ class Board {
 
     }
 
-    unobstructedMove(oldRow, oldCol, newRow, newCol) {
+    unobstructedMove(oldRow, oldCol, newRow, newCol){
         let [lowCol, highCol] = [newCol, oldCol].sort((a, b) => a - b)
         let [lowRow, highRow] = [newRow, oldRow].sort((a, b) => a - b)
         if (newRow === oldRow) {
             for (let c = lowCol + 1; c < highCol; c++) {
-                if (this.board[newRow][c].piece) throw new Error('Obstructed Horizontal Move')
+                if (this.board[newRow][c].piece) return false
             }
         } else if (newCol === oldCol) {
             for (let r = lowRow + 1; r < highRow; r++) {
-                if (this.board[r][newCol].piece) throw new Error('Obstructed Vertical Move')
+                if (this.board[r][newCol].piece) return false
             }
         } else if (newRow + newCol === oldRow + oldCol) {
             for (let r = lowRow + 1; r < highRow; r++) {
                 for (let c = highCol - 1; c > lowCol; c--) {
-                    if (this.board[r][c].piece) throw new Error('Obstructed Left-Diagonal Move')
+                    if (this.board[r][c].piece) return false
                 }
             }
         } else if (newRow - newCol === oldRow - oldCol) {
             for (let r = lowRow + 1; r < highRow; r++) {
                 for (let c = lowCol + 1; c < highCol; c++) {
-                    if (this.board[r][c].piece) throw new Error('Obstructed Right-Diagonal Move')
+                    if (this.board[r][c].piece) return false
                 }
             }
         } else {
-            throw new Error('Invalid Move')
+            return false
         }
+        return true
     }
 
     move(oldTileName, newTileName){
-      let columns = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-      let rows = ['1', '2', '3', '4', '5', '6', '7', '8']
-      let oldTile = this.board[rows.indexOf(oldTileName[1])][columns.indexOf(oldTileName[0])]
-      let newTile = this.board[rows.indexOf(newTileName[1])][columns.indexOf(newTileName[0])]
+
+      let oldTile = this.tile(oldTileName)
+      let newTile = this.tile(newTileName)
       if(!oldTile.piece) throw new Error ('Board.move: no piece on beginning tile')
 
       if(oldTile.piece.moveOkay(oldTile, newTile, this._gameHistory)){
+        if(!this.unobstructedMove(oldTile.rowIndex, oldTile.columnIndex, newTile.rowIndex, newTile.columnIndex)) throw new Error ('Board.move: illegal move ')
         this._gameHistory.addMove(oldTile, newTile)
 
         newTile.piece = oldTile.piece
@@ -268,6 +269,12 @@ class Board {
 
     get history(){
       return this._gameHistory
+    }
+
+    tile(tileName){
+      let columns = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+      let rows = ['1', '2', '3', '4', '5', '6', '7', '8']
+      return this.board[rows.indexOf(tileName[1])][columns.indexOf(tileName[0])]
     }
 }
 
@@ -297,6 +304,12 @@ class Piece {
     get shortColor() {
         return this.color === 'White' ? '(W)' : '(B)'
     }
+
+    static moveOkay(tile, newTile){
+      if(!tile || !tile.piece || !newTile) return false
+      return true
+    }
+
 }
 
 class Pawn extends Piece {
@@ -315,7 +328,7 @@ class Pawn extends Piece {
     }
 
     moveOkay(tile, newTile, history){
-      if(!tile || !tile.piece || !newTile) return false
+      if(!Piece.moveOkay(tile, newTile)) return false
 
       let verticalMovement = Math.abs(tile.rowIndex - newTile.rowIndex)
       let horizontalMovement = Math.abs(newTile.columnIndex - tile.columnIndex)
@@ -326,7 +339,8 @@ class Pawn extends Piece {
         return false
       } else {
         if(verticalMovement === 2){
-          if (horizontalMovement) return false
+          // if(Board.unobstructedMove(tile.rowIndex, tile.columnIndex, newTile.rowIndex, newTile.columnIndex)) return false
+          if (horizontalMovement ) return false
           if(history.pieceHistory(tile.piece.id).length != 0 ) return false
         }else if(horizontalMovement){
           if(verticalMovement !== 1) return false
@@ -334,6 +348,7 @@ class Pawn extends Piece {
         }else if(!horizontalMovement){
           if(newTile.piece) return false
         }
+
         return true
       }
 
@@ -353,6 +368,19 @@ class Bishop extends Piece {
 
     get shortName() {
         return this._shortName
+    }
+
+    moveOkay (tile, newTile, history){
+      console.log('moveOkay tile', tile);
+      if(!Piece.moveOkay(tile, newTile)) return false
+
+      let verticalMovement = Math.abs(tile.rowIndex - newTile.rowIndex)
+      let horizontalMovement = Math.abs(newTile.columnIndex - tile.columnIndex)
+
+      if(verticalMovement !== horizontalMovement) return false
+      if(newTile.piece && newTile.piece.color === tile.piece.color) return false
+
+      return true
     }
 }
 
@@ -467,12 +495,11 @@ class History {
 
 let woo = new Board()
 
-console.log(woo.board)
-woo.move('A2', 'A4')
+woo.move('D2', 'D4')
 console.log('**************************');
-console.log(woo.board)
+woo.move('C1', 'B2')
 console.log('**************************');
-console.log(woo.history)
+console.log(woo.tile('B2'))
 
 module.exports ={
   Game,
