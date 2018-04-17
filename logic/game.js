@@ -368,7 +368,7 @@ class History {
         
     }
 
-    piecesCaputredBy (pieceId) {
+    piecesCapturedBy (pieceId) {
         let capturedObj = {}
         this.game.forEach(historyObj => {
             if (historyObj.id == pieceId && historyObject.captured) {
