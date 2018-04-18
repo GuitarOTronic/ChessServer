@@ -93,7 +93,7 @@ class Board {
     }
 
     pieceSafe(row, col) {
-        let tile = this.board[row, col]
+        let tile = this.board[row][col]
         let safe = true
         let dangerousTiles = []
         //Knights Check
@@ -108,7 +108,7 @@ class Board {
             [-2, -1]
         ]
 
-        knightPositions = this._pointsRelativeToPiece(row, column, knightPositions)
+        knightPositions = this._pointsRelativeToPiece(row, col, knightPositions)
 
         for (let i = 0; i < knightPositions.length; i++) {
             let [r, c] = knightPositions[i]
@@ -162,11 +162,13 @@ class Board {
             let currentColumn = col + colDir
             let currentTile = this.board[currentRow] && this.board[currentRow][currentColumn]
             let currentPiece = currentTile && currentTile.piece
+
             while (currentTile && (!currentPiece || currentPiece.color !== tile.piece.color)) {
+              let pawnCheck = Math.abs(row - currentRow ) === 1 && Math.abs(col - currentColumn) === 1
                 if (currentPiece && this.board[currentRow][currentColumn].piece.color !== tile.piece.color) {
                     switch (directionInfo.direction) {
                         case 'diagonal':
-                            if (currentPiece.name === 'Bishop' || currentPiece.name === 'Queen' || (currentPiece.name === 'Pawn' && currentPiece.color === directionInfo.pawnColor)) dangerousTiles.push([currentRow, currentColumn])
+                            if (currentPiece.name === 'Bishop' || currentPiece.name === 'Queen' || (currentPiece.name === 'Pawn' &&  pawnCheck && currentPiece.color === directionInfo.pawnColor)) dangerousTiles.push([currentRow, currentColumn])
                             break
                         case 'straight':
                             if (currentPiece.name === 'Rook' || currentPiece.name === 'Queen') dangerousTiles.push([currentRow, currentColumn])
@@ -339,7 +341,6 @@ class Pawn extends Piece {
         return false
       } else {
         if(verticalMovement === 2){
-          // if(Board.unobstructedMove(tile.rowIndex, tile.columnIndex, newTile.rowIndex, newTile.columnIndex)) return false
           if (horizontalMovement ) return false
           if(history.pieceHistory(tile.piece.id).length != 0 ) return false
         }else if(horizontalMovement){
@@ -371,7 +372,6 @@ class Bishop extends Piece {
     }
 
     moveOkay (tile, newTile, history){
-      console.log('moveOkay tile', tile);
       if(!Piece.moveOkay(tile, newTile)) return false
 
       let verticalMovement = Math.abs(tile.rowIndex - newTile.rowIndex)
@@ -495,10 +495,11 @@ class History {
 
 let woo = new Board()
 
-woo.move('D2', 'D4')
+woo.move('B2', 'B4')
 console.log('**************************');
 woo.move('C1', 'B2')
-console.log('**************************');
+let bleh = woo.pieceSafe(6, 6)
+console.log('**************************', bleh);
 console.log(woo.tile('B2'))
 
 module.exports ={
