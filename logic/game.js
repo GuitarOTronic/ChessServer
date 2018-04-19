@@ -102,6 +102,22 @@ class Board {
         return kingTile
     }
 
+    _pieceSafe(tile) {
+        let currentPieceColor = tile.piece.color
+        let opponentPieces = this.board.reduce((opponentTiles, rowArr) => {
+            return [...opponentTiles, ...rowArr.filter(rowTile => (rowTile.piece && rowTile.piece.color !== currentPieceColor))]
+        }, [])
+
+        let dangerousTiles = opponentPieces.filter(opponentTile => {
+            return (
+                opponentTile.piece.moveOkay(opponentTile, tile, this._gameHistory) &&
+                (opponentTile.piece.name === 'Knight' || this.unobstructedMove(opponentTile.rowIndex, opponentTile.columnIndex,tile.rowIndex, tile.columnIndex))
+            )
+        })
+
+        console.log('DANGER DANGER:', dangerousTiles)
+    }
+
     pieceSafe(row, col) {
         let tile = this.board[row][col]
         let safe = true
@@ -557,9 +573,9 @@ class History {
 }
 
 let woo = new Board()
-// woo.move('A2', 'A4')
-// woo.move('A4', 'A5')
-// woo.move('B2', 'B4')
+woo.move('A2', 'A4')
+woo.move('A4', 'A5')
+woo.move('A5', 'A6')
 // woo.move('A1', 'A3')
 // woo.move('A3', 'D3')
 // woo.move('D3', 'D7')
@@ -567,9 +583,9 @@ let woo = new Board()
 // woo.move('C7', 'D6')
 console.log('**************************');
 console.log('**************************');
-let bleh = woo.pieceSafe(6, 6)
+let bleh = woo._pieceSafe(woo.tile('A6'))
 
-console.log(woo.tile('F4'))
+// console.log(woo.tile('F4'))
 
 module.exports ={
   Game,
