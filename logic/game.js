@@ -119,7 +119,7 @@ class Board {
     }
 
     pieceSafe(tile) {
-        return !threateningTiles(tile).length
+        return !this.threateningTiles(tile).length
     }
 
     _pointsRelativeToPiece(pieceRow, pieceCol, arrayOfRelativeXYPositions) {
@@ -154,24 +154,38 @@ class Board {
     unobstructedMove(oldRow, oldCol, newRow, newCol){
         let [lowCol, highCol] = [newCol, oldCol].sort((a, b) => a - b)
         let [lowRow, highRow] = [newRow, oldRow].sort((a, b) => a - b)
+        console.log('******', oldRow, oldCol, newRow, newCol);
         if (newRow === oldRow) {
             for (let c = lowCol + 1; c < highCol; c++) {
-                if (this.board[newRow][c].piece) return false
+                if (this.board[newRow][c].piece) {
+                  console.log('1: ', newRow, c)
+                  return false
+                }
             }
         } else if (newCol === oldCol) {
             for (let r = lowRow + 1; r < highRow; r++) {
-                if (this.board[r][newCol].piece) return false
+                if (this.board[r][newCol].piece) {
+                  console.log('2: ', r, newCol)
+                  return false
+                }
             }
         } else if (newRow + newCol === oldRow + oldCol) {
             for (let r = lowRow + 1; r < highRow; r++) {
                 for (let c = highCol - 1; c > lowCol; c--) {
-                    if (this.board[r][c].piece) return false
+                  console.log('r c : ', r, c);
+                    if (this.board[r][c].piece) {
+                      console.log('3: ', r, c)
+                      return false
+                    }
                 }
             }
         } else if (newRow - newCol === oldRow - oldCol) {
             for (let r = lowRow + 1; r < highRow; r++) {
                 for (let c = lowCol + 1; c < highCol; c++) {
-                    if (this.board[r][c].piece) return false
+                    if (this.board[r][c].piece) {
+                      console.log('4: ', r, c)
+                      return false
+                    }
                 }
             }
         } else {
@@ -189,14 +203,33 @@ class Board {
         if (oldTile.piece.name !== 'Knight') {
             if(!this.unobstructedMove(oldTile.rowIndex, oldTile.columnIndex, newTile.rowIndex, newTile.columnIndex)) throw new Error ('Board.move: illegal move. Shits in the way')
         }
-        
-        this._gameHistory.addMove(oldTile, newTile)
+        //our king safe?
+        // their king in check?
+        //  if yes, check for checkMate
+
+        //phantom move
+        let tempOldPiece = newTile.piece
         newTile.piece = oldTile.piece
         oldTile.piece = null
+        let ourKing = this._findKingTile(newTile.piece.color)
+        let isSafe = this.pieceSafe(ourKing)
+
+        if(isSafe){
+          oldTile.piece = newTile.piece
+          newTile.piece = tempOldPiece
+          this._gameHistory.addMove(oldTile, newTile)
+          newTile.piece = oldTile.piece
+          oldTile.piece = null
+          console.log('isSafe');
+        }else{
+          throw new Error ('You kings in check!')
+        }
+
+
       } else {
         throw new Error ('Board.move: illegal move ')
       }
-
+      console.log(this.board);
     }
 
     get board() {
@@ -481,19 +514,20 @@ class History {
 }
 
 let woo = new Board()
-woo.move('A2', 'A4')
-woo.move('A4', 'A5')
-woo.move('A5', 'A6')
+// woo.move('A2', 'A4')
+// woo.move('A4', 'A5')
+// woo.move('A5', 'A6')
 // woo.move('A1', 'A3')
 // woo.move('A3', 'D3')
-// woo.move('D3', 'D7')
-// woo.move('D7', 'D6')
-// woo.move('C7', 'D6')
-console.log('**************************');
-console.log('**************************');
-let bleh = woo._pieceSafe(woo.tile('A6'))
+woo.move('C2', 'C3')
+console.log(woo.tile('C2'))
+woo.move('D1', 'A4')
+woo.move('D7', 'D6')
+// console.log('**************************');
+// console.log('**************************');
+// let bleh = woo._pieceSafe(woo.tile('A6'))
 
-// console.log(woo.tile('F4'))
+
 
 module.exports ={
   Game,
