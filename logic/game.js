@@ -82,10 +82,6 @@ class Board {
         return null
     }
 
-    newTileOK(oldRow, oldCol, newRow, newCol) {
-        if (this.board[newRow][newCol].piece.color === this.board[oldRow][oldCol].piece.color) throw new Error('Same Color Piece on New Tile')
-    }
-
     _findKingTile(color) {
         let kingTile
 
@@ -189,7 +185,7 @@ class Board {
         if (oldTile.piece.name !== 'Knight') {
             if(!this.unobstructedMove(oldTile.rowIndex, oldTile.columnIndex, newTile.rowIndex, newTile.columnIndex)) throw new Error ('Board.move: illegal move. Shits in the way')
         }
-        
+
         this._gameHistory.addMove(oldTile, newTile)
         newTile.piece = oldTile.piece
         oldTile.piece = null
