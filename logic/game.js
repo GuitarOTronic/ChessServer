@@ -257,14 +257,15 @@ class Board {
         return true
     }
 
-    move(oldTileName, newTileName){
-
+    move(oldTileName, newTileName) {
       let oldTile = this.tile(oldTileName)
       let newTile = this.tile(newTileName)
       if(!oldTile.piece) throw new Error ('Board.move: no piece on beginning tile')
 
       if(oldTile.piece.moveOkay(oldTile, newTile, this._gameHistory)){
-        if(!this.unobstructedMove(oldTile.rowIndex, oldTile.columnIndex, newTile.rowIndex, newTile.columnIndex)) throw new Error ('Board.move: illegal move. Shits in the way')
+        if (oldTile.piece.name !== 'Knight') {
+            if(!this.unobstructedMove(oldTile.rowIndex, oldTile.columnIndex, newTile.rowIndex, newTile.columnIndex)) throw new Error ('Board.move: illegal move. Shits in the way')
+        }
         this._gameHistory.addMove(oldTile, newTile)
         newTile.piece = oldTile.piece
         oldTile.piece = null
@@ -408,6 +409,17 @@ class Knight extends Piece {
     get shortName() {
         return this._shortName
     }
+
+    moveOkay (tile, newTile) {
+        if (!Piece.moveOkay(tile, newTile)) return false
+
+        let verticalMovement = Math.abs(tile.rowIndex - newTile.rowIndex)
+        let horizontalMovement = Math.abs(newTile.columnIndex - tile.columnIndex)
+
+        if (!((verticalMovement && horizontalMovement) && verticalMovement + horizontalMovement === 3)) return false
+
+        return true
+    }
 }
 
 class Rook extends Piece {
@@ -428,7 +440,7 @@ class Rook extends Piece {
 
     moveOkay (tile, newTile, history){
       if(!Piece.moveOkay(tile, newTile)) return false
-      console.log('Rook ********', history);
+
       let verticalMovement = Math.abs(tile.rowIndex - newTile.rowIndex)
       let horizontalMovement = Math.abs(newTile.columnIndex - tile.columnIndex)
 
@@ -451,6 +463,21 @@ class Queen extends Piece {
 
     get shortName() {
         return this._shortName
+    }
+
+    moveOkay (tile, newTile) {
+        if (!Piece.moveOkay(tile, newTile)) return false
+
+        let verticalMovement = Math.abs(tile.rowIndex - newTile.rowIndex)
+        let horizontalMovement = Math.abs(newTile.columnIndex - tile.columnIndex)
+
+        if (verticalMovement !== horizontalMovement) {
+            if (verticalMovement && horizontalMovement) {
+                return false
+            }
+        }
+
+        return true
     }
 }
 
@@ -530,19 +557,19 @@ class History {
 }
 
 let woo = new Board()
-woo.move('A2', 'A4')
+// woo.move('A2', 'A4')
 // woo.move('A4', 'A5')
 // woo.move('B2', 'B4')
-woo.move('A1', 'A3')
-woo.move('A3', 'D3')
-woo.move('D3', 'D7')
-woo.move('D7', 'D6')
-woo.move('C7', 'D6')
+// woo.move('A1', 'A3')
+// woo.move('A3', 'D3')
+// woo.move('D3', 'D7')
+// woo.move('D7', 'D6')
+// woo.move('C7', 'D6')
 console.log('**************************');
 console.log('**************************');
 let bleh = woo.pieceSafe(6, 6)
 
-console.log(woo.tile('D6'))
+console.log(woo.tile('F4'))
 
 module.exports ={
   Game,
