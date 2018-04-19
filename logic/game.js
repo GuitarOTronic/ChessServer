@@ -102,101 +102,24 @@ class Board {
         return kingTile
     }
 
-    pieceSafe(row, col) {
-        let tile = this.board[row][col]
-        let safe = true
-        let dangerousTiles = []
-        //Knights Check
-        let knightPositions = [
-            [1, 2],
-            [1, -2],
-            [-1, 2],
-            [-1, -2],
-            [2, 1],
-            [2, -1],
-            [-2, 1],
-            [-2, -1]
-        ]
+    threateningTiles(tile) {
+        let currentPieceColor = tile.piece.color
+        let opponentPieces = this.board.reduce((opponentTiles, rowArr) => {
+            return [...opponentTiles, ...rowArr.filter(rowTile => (rowTile.piece && rowTile.piece.color !== currentPieceColor))]
+        }, [])
 
-        knightPositions = this._pointsRelativeToPiece(row, col, knightPositions)
-
-        for (let i = 0; i < knightPositions.length; i++) {
-            let [r, c] = knightPositions[i]
-            if (this.board[r][c].piece && this.board[r][c].piece.name === 'Knight' && this.board[r][c].piece.color !== kingTile.piece.color) dangerousTiles.push([r, c])
-        }
-        //End Knights Check
-
-        //crossCheck bro
-        let pointsAroundPiece = [
-            {
-                direction: 'straight',
-                modifier: [-1, 0]
-            },
-            {
-                direction: 'diagonal',
-                pawnColor: 'White',
-                modifier: [-1, 1]
-            },
-            {
-                direction: 'diagonal',
-                pawnColor: 'White',
-                modifier: [-1, -1]
-            },
-            {
-                direction: 'straight',
-                modifier: [0, 1]
-            },
-            {
-                direction: 'straight',
-                modifier: [0, -1]
-            },
-            {
-                direction: 'straight',
-                modifier: [1, 0]
-            },
-            {
-                direction: 'diagonal',
-                pawnColor: 'Black',
-                modifier: [1, 1]
-            },
-            {
-                direction: 'diagonal',
-                pawnColor: 'Black',
-                modifier: [1, -1]
-            }
-        ]
-
-        for (let directionInfo of pointsAroundPiece) {
-            let [rowDir, colDir] = directionInfo.modifier
-            let currentRow = row + rowDir
-            let currentColumn = col + colDir
-            let currentTile = this.board[currentRow] && this.board[currentRow][currentColumn]
-            let currentPiece = currentTile && currentTile.piece
-
-            while (currentTile && (!currentPiece || currentPiece.color !== tile.piece.color)) {
-              let pawnCheck = Math.abs(row - currentRow ) === 1 && Math.abs(col - currentColumn) === 1
-                if (currentPiece && this.board[currentRow][currentColumn].piece.color !== tile.piece.color) {
-                    switch (directionInfo.direction) {
-                        case 'diagonal':
-                            if (currentPiece.name === 'Bishop' || currentPiece.name === 'Queen' || (currentPiece.name === 'Pawn' &&  pawnCheck && currentPiece.color === directionInfo.pawnColor)) dangerousTiles.push([currentRow, currentColumn])
-                            break
-                        case 'straight':
-                            if (currentPiece.name === 'Rook' || currentPiece.name === 'Queen') dangerousTiles.push([currentRow, currentColumn])
-                            break
-                        default:
-                            break
-                    }
-                    break
-                }
-
-                currentRow += rowDir
-                currentColumn += colDir
-                currentTile = this.board[currentRow] && this.board[currentRow][currentColumn]
-                currentPiece = currentTile && currentTile.piece
-            }
-        }
+        let dangerousTiles = opponentPieces.filter(opponentTile => {
+            return (
+                opponentTile.piece.moveOkay(opponentTile, tile, this._gameHistory) &&
+                (opponentTile.piece.name === 'Knight' || this.unobstructedMove(opponentTile.rowIndex, opponentTile.columnIndex,tile.rowIndex, tile.columnIndex))
+            )
+        })
 
         return dangerousTiles
+    }
+
+    pieceSafe(tile) {
+        return !threateningTiles(tile).length
     }
 
     _pointsRelativeToPiece(pieceRow, pieceCol, arrayOfRelativeXYPositions) {
@@ -266,6 +189,7 @@ class Board {
         if (oldTile.piece.name !== 'Knight') {
             if(!this.unobstructedMove(oldTile.rowIndex, oldTile.columnIndex, newTile.rowIndex, newTile.columnIndex)) throw new Error ('Board.move: illegal move. Shits in the way')
         }
+        
         this._gameHistory.addMove(oldTile, newTile)
         newTile.piece = oldTile.piece
         oldTile.piece = null
@@ -557,9 +481,9 @@ class History {
 }
 
 let woo = new Board()
-// woo.move('A2', 'A4')
-// woo.move('A4', 'A5')
-// woo.move('B2', 'B4')
+woo.move('A2', 'A4')
+woo.move('A4', 'A5')
+woo.move('A5', 'A6')
 // woo.move('A1', 'A3')
 // woo.move('A3', 'D3')
 // woo.move('D3', 'D7')
@@ -567,9 +491,9 @@ let woo = new Board()
 // woo.move('C7', 'D6')
 console.log('**************************');
 console.log('**************************');
-let bleh = woo.pieceSafe(6, 6)
+let bleh = woo._pieceSafe(woo.tile('A6'))
 
-console.log(woo.tile('F4'))
+// console.log(woo.tile('F4'))
 
 module.exports ={
   Game,
