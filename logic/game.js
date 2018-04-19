@@ -317,7 +317,9 @@ class Piece {
     }
 
     static moveOkay(tile, newTile){
-      if(!tile || !tile.piece || !newTile) return false
+      if (!tile || !tile.piece || !newTile) return false
+      if (tile === newTile) return false
+      if (newTile.piece && newTile.piece.color === tile.piece.color) return false
       return true
     }
 
@@ -354,7 +356,7 @@ class Pawn extends Piece {
           if (history.pieceHistory(tile.piece.id).length != 0 ) return false
         }else if (horizontalMovement) {
           if (verticalMovement !== 1) return false
-          if (!newTile.piece || newTile.piece.color === tile.piece.color) return false
+          if (!newTile.piece) return false
         }else if (!horizontalMovement) {
           if (newTile.piece) return false
         }
@@ -387,7 +389,6 @@ class Bishop extends Piece {
       let horizontalMovement = Math.abs(newTile.columnIndex - tile.columnIndex)
 
       if(verticalMovement !== horizontalMovement) return false
-      if(newTile.piece && newTile.piece.color === tile.piece.color) return false
 
       return true
     }
@@ -433,8 +434,6 @@ class Rook extends Piece {
 
       if(verticalMovement && horizontalMovement) return false
 
-      if(newTile.piece && newTile.piece.color === tile.piece.color) return false
-
       return true
     }
 }
@@ -468,6 +467,22 @@ class King extends Piece {
 
     get shortName() {
         return this._shortName
+    }
+
+    moveOkay(tile, newTile, history) {
+        if (!Piece.moveOkay(tile, newTile)) return false
+
+        let verticalMovement = Math.abs(tile.rowIndex - newTile.rowIndex)
+        let horizontalMovement = Math.abs(newTile.columnIndex - tile.columnIndex)
+
+        if (verticalMovement > 1) return false
+
+        if (horizontalMovement > 1) {
+            //castle check goes here
+            return false
+        }
+
+        return true
     }
 }
 
