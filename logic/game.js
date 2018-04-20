@@ -82,10 +82,6 @@ class Board {
         return null
     }
 
-    newTileOK(oldRow, oldCol, newRow, newCol) {
-        if (this.board[newRow][newCol].piece.color === this.board[oldRow][oldCol].piece.color) throw new Error('Same Color Piece on New Tile')
-    }
-
     _findKingTile(color) {
         let kingTile
 
@@ -154,40 +150,39 @@ class Board {
     unobstructedMove(oldRow, oldCol, newRow, newCol){
         let [lowCol, highCol] = [newCol, oldCol].sort((a, b) => a - b)
         let [lowRow, highRow] = [newRow, oldRow].sort((a, b) => a - b)
-        console.log('******', oldRow, oldCol, newRow, newCol);
+
         if (newRow === oldRow) {
             for (let c = lowCol + 1; c < highCol; c++) {
                 if (this.board[newRow][c].piece) {
-                  console.log('1: ', newRow, c)
                   return false
                 }
             }
         } else if (newCol === oldCol) {
             for (let r = lowRow + 1; r < highRow; r++) {
                 if (this.board[r][newCol].piece) {
-                  console.log('2: ', r, newCol)
                   return false
                 }
             }
         } else if (newRow + newCol === oldRow + oldCol) {
-            for (let r = lowRow + 1; r < highRow; r++) {
-                for (let c = highCol - 1; c > lowCol; c--) {
-                  console.log('r c : ', r, c);
-                    if (this.board[r][c].piece) {
-                      console.log('3: ', r, c)
-                      return false
-                    }
-                }
+            let [c, r] = [highCol, lowRow]
+
+            while (c > lowCol) {
+                // and r < highRow, but the difference will always be the same for both column and row
+                c -= 1
+                r += 1
+                if (this.board[r][c].piece) return false
             }
+
         } else if (newRow - newCol === oldRow - oldCol) {
-            for (let r = lowRow + 1; r < highRow; r++) {
-                for (let c = lowCol + 1; c < highCol; c++) {
-                    if (this.board[r][c].piece) {
-                      console.log('4: ', r, c)
-                      return false
-                    }
-                }
+            let [c, r] = [lowCol, lowRow]
+
+            while (c < highCol) {
+                // and r < highRow, but the difference will always be the same for both column and row
+                c += 1
+                r += 1
+                if (this.board[r][c].piece) return false
             }
+
         } else {
             return false
         }
@@ -220,7 +215,6 @@ class Board {
           this._gameHistory.addMove(oldTile, newTile)
           newTile.piece = oldTile.piece
           oldTile.piece = null
-          console.log('isSafe');
         }else{
           throw new Error ('You kings in check!')
         }
@@ -229,7 +223,6 @@ class Board {
       } else {
         throw new Error ('Board.move: illegal move ')
       }
-      console.log(this.board);
     }
 
     get board() {
